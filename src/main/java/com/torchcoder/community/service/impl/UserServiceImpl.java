@@ -1,6 +1,8 @@
 package com.torchcoder.community.service.impl;
 
+import com.torchcoder.community.dao.LoginTicketMapper;
 import com.torchcoder.community.dao.UserMapper;
+import com.torchcoder.community.entity.LoginTicket;
 import com.torchcoder.community.entity.User;
 import com.torchcoder.community.service.UserService;
 import com.torchcoder.community.util.CommunityUtil;
@@ -36,6 +38,9 @@ public class UserServiceImpl implements UserService {
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
+
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
 
     @Override
     public User findUserById(int id) {
@@ -80,7 +85,7 @@ public class UserServiceImpl implements UserService {
         user.setType(0);
         user.setActivationCode(CommunityUtil.generateUUID());
         user.setCreateTime(new Date());
-        user.setHeaderUrl("https://i0.hdslb.com/bfs/face/member/noface.jpg@96w_96h_1c_1s.webp");
+        user.setHeaderUrl("http://images.nowcoder.com/head/149t.png");
         userMapper.insertUser(user);
 
         // 激活邮件
@@ -107,5 +112,67 @@ public class UserServiceImpl implements UserService {
         } else {
             return ACTIVATION_FAILURE;
         }
+    }
+
+    @Override
+    public Map<String, Object> login(String username, String password, int expiredSeconds) {
+        Map<String, Object> map = new HashMap<>();
+        // 空值处理
+        if(StringUtils.isBlank(username)){
+            map.put("usernameMsg", "账号不能为空!");
+            return map;
+        }
+        if(StringUtils.isBlank(password)){
+            map.put("passwordMsg", "密码不能为空!");
+            return map;
+        }
+
+        User user = userMapper.selectByName(username);
+        if(user == null){
+            map.put("usernameMsg", "账号不存在!");
+            return map;
+        }
+
+        if(user.getStatus() == 0){
+            map.put("usernameMsg", "账号未激活!");
+            return map;
+        }
+
+        //验证密码
+        password = CommunityUtil.md5(password + user.getSalt());
+        if(!user.getPassword().equals(password)){
+            map.put("passwordMsg", "密码不正确!");
+            return map;
+        }
+
+        LoginTicket loginTicket = new LoginTicket();
+        loginTicket.setUserId(user.getId());
+        // UUID
+        loginTicket.setTicket(CommunityUtil.generateUUID());
+        // 0 - 有效 1 - 无效
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds * 1000));
+        loginTicketMapper.insertLoginTicket(loginTicket);
+
+        map.put("ticket", loginTicket.getTicket());
+
+
+        return map;
+    }
+
+    @Override
+    public void logout(String ticket) {
+        loginTicketMapper.updateStatus(ticket, 1);
+    }
+
+    @Override
+    public LoginTicket findLoginTicket(String ticket) {
+
+        return loginTicketMapper.selectByTicket(ticket);
+    }
+
+    @Override
+    public int updateHeader(int userId, String headerUrl) {
+        return userMapper.updateHeader(userId, headerUrl);
     }
 }
