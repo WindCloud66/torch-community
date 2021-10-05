@@ -1,6 +1,7 @@
 package com.torchcoder.community.controller.interceptor;
 
 import com.torchcoder.community.annotation.LoginRequired;
+import com.torchcoder.community.util.CommunityUtil;
 import com.torchcoder.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,6 +30,7 @@ public class LoginRequiredInterceptor implements HandlerInterceptor {
             LoginRequired annotation = method.getAnnotation(LoginRequired.class);
             if(annotation != null && hostHolder.getUser() == null){
                 //注解需要登录 实际无登录
+                response.getWriter().write(CommunityUtil.getJSONString(403, "你还没有登录哦!"));
                 response.sendRedirect(request.getContextPath() + "/login");
                 return false;
             }

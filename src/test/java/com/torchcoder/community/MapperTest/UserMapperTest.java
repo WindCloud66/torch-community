@@ -68,13 +68,18 @@ public class UserMapperTest {
 
     @Test
     public void testSelectPosts() {
-        List<DiscussPost> list = discussPostMapper.selectDiscussPosts(0, 0, 10);
-        for(DiscussPost post : list) {
-            System.out.println(post);
-        }
-
-        int rows = discussPostMapper.selectDiscussPostRows(0);
-        System.out.println(rows);
+//        List<DiscussPost> list = discussPostMapper.selectDiscussPosts(0, 0, 10);
+//        for(DiscussPost post : list) {
+//            System.out.println(post);
+//        }
+//
+//        int rows = discussPostMapper.selectDiscussPostRows(0);
+        DiscussPost discussPost = new DiscussPost();
+        discussPost.setUserId(158);
+        discussPost.setTitle("wind");
+        discussPost.setContent("cloud");
+        int i = discussPostMapper.insertDiscussPost(discussPost);
+        System.out.println(i);
     }
 
     @Test
