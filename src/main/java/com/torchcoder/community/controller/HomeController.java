@@ -57,4 +57,11 @@ public class HomeController {
         userService.logout(ticket);
         return "redirect:/login";
     }
+
+
+    @RequestMapping(path = "/error", method = RequestMethod.GET)
+    public String getErrorPage() {
+        return "/error/500";
+    }
+
 }

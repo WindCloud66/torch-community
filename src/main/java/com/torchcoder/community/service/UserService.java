@@ -26,4 +26,6 @@ public interface UserService extends CommunityConstant {
     LoginTicket findLoginTicket(String ticket);
 
     public int updateHeader(int userId, String headerUrl);
+
+    User findUserByName(String toName);
 }
