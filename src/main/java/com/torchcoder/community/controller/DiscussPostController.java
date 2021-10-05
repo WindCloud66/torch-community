@@ -88,9 +88,9 @@ public class DiscussPostController {
                 commentVo.put("comment", comment);
                 commentVo.put("user", userService.findUserById(comment.getUserId()));
 
-                // 回复列表
+                // TODO 回复分页
                 List<Comment> replyList = commentService.findCommentsByEntity(CommunityConstant.ENTITY_TYPE_COMMENT,
-                        comment.getEntityId(), 0, Integer.MAX_VALUE);
+                        comment.getId(), 0, Integer.MAX_VALUE);
                 List<Map<String, Object>> replyVoList = new ArrayList<>();
                 if(replyList != null){
                     for(Comment reply:  replyList){

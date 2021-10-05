@@ -2,9 +2,11 @@ package com.torchcoder.community.MapperTest;
 
 import com.torchcoder.community.dao.DiscussPostMapper;
 import com.torchcoder.community.dao.LoginTicketMapper;
+import com.torchcoder.community.dao.MessageMapper;
 import com.torchcoder.community.dao.UserMapper;
 import com.torchcoder.community.entity.DiscussPost;
 import com.torchcoder.community.entity.LoginTicket;
+import com.torchcoder.community.entity.Message;
 import com.torchcoder.community.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,8 @@ public class UserMapperTest {
     private DiscussPostMapper discussPostMapper;
     @Autowired
     private LoginTicketMapper loginTicketMapper;
+    @Autowired
+    private MessageMapper messageMapper;
 
     @Test
     public void testSelectUser(){
@@ -101,5 +105,29 @@ public class UserMapperTest {
         loginTicketMapper.updateStatus("abc", 1);
         loginTicket = loginTicketMapper.selectByTicket("abc");
         System.out.println(loginTicket);
+    }
+
+
+    @Test
+    public void testSelectLetters() {
+        List<Message> list = messageMapper.selectConversations(111, 0, 20);
+        for (Message message : list) {
+            System.out.println(message);
+        }
+        System.out.println("-----------------------------------");
+        int count = messageMapper.selectConversationCount(111);
+        System.out.println(count);
+        System.out.println("-----------------------------------");
+        list = messageMapper.selectLetters("111_112", 0, 10);
+        for (Message message : list) {
+            System.out.println(message);
+        }
+        System.out.println("-----------------------------------");
+        count = messageMapper.selectLetterCount("111_112");
+        System.out.println(count);
+        System.out.println("-----------------------------------");
+        count = messageMapper.selectLetterUnreadCount(131, "111_131");
+        System.out.println(count);
+
     }
 }
