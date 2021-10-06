@@ -8,6 +8,7 @@ import com.torchcoder.community.entity.Page;
 import com.torchcoder.community.entity.User;
 import com.torchcoder.community.service.CommentService;
 import com.torchcoder.community.service.DiscussPostService;
+import com.torchcoder.community.service.LikeService;
 import com.torchcoder.community.service.UserService;
 import com.torchcoder.community.util.CommunityConstant;
 import com.torchcoder.community.util.CommunityUtil;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.*;
+
+import static com.torchcoder.community.util.CommunityConstant.ENTITY_TYPE_COMMENT;
 
 @Controller
 @RequestMapping("/discuss")
@@ -37,6 +40,9 @@ public class DiscussPostController {
 
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private LikeService likeService;
 
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
@@ -72,6 +78,17 @@ public class DiscussPostController {
         model.addAttribute("discussPost", discussPost);
         model.addAttribute("user", user);
 
+
+
+        // 点赞数量
+        long likeCount = likeService.findEntityLikeCount(CommunityConstant.ENTITY_TYPE_POST, discussPostId);
+        model.addAttribute("likeCount", likeCount);
+        // 点赞状态 用户没有登录则不显示
+        int likeStatus = hostHolder.getUser() == null ? 0 :
+                likeService.findEntityLikeStatus(hostHolder.getUser().getId(), CommunityConstant.ENTITY_TYPE_POST, discussPostId);
+        model.addAttribute("likeStatus", likeStatus);
+
+
         // 评论分页信息
         page.setLimit(5);
         page.setPath("/discuss/detail/" + discussPostId);
@@ -84,12 +101,23 @@ public class DiscussPostController {
         List<Map<String, Object>> commentVoList = new ArrayList<>();
         if(comments != null){
             for(Comment comment: comments){
+                // 评论vo
                 Map<String, Object> commentVo = new HashMap<>();
+                // 评论
                 commentVo.put("comment", comment);
+                // 作者
                 commentVo.put("user", userService.findUserById(comment.getUserId()));
 
+                // 点赞数量
+                likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, comment.getId());
+                commentVo.put("likeCount", likeCount);
+                // 点赞状态
+                likeStatus = hostHolder.getUser() == null ? 0 :
+                        likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, comment.getId());
+                commentVo.put("likeStatus", likeStatus);
+
                 // TODO 回复分页
-                List<Comment> replyList = commentService.findCommentsByEntity(CommunityConstant.ENTITY_TYPE_COMMENT,
+                List<Comment> replyList = commentService.findCommentsByEntity(ENTITY_TYPE_COMMENT,
                         comment.getId(), 0, Integer.MAX_VALUE);
                 List<Map<String, Object>> replyVoList = new ArrayList<>();
                 if(replyList != null){
@@ -102,13 +130,22 @@ public class DiscussPostController {
                         // 回复目标
                         User target = reply.getTargetId() == 0 ? null : userService.findUserById(reply.getTargetId());
                         replyVo.put("target", target);
+
+                        // 点赞数量
+                        likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, reply.getId());
+                        replyVo.put("likeCount", likeCount);
+                        // 点赞状态
+                        likeStatus = hostHolder.getUser() == null ? 0 :
+                                likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, reply.getId());
+                        replyVo.put("likeStatus", likeStatus);
+
                         replyVoList.add(replyVo);
                     }
                 }
                 commentVo.put("replys", replyVoList);
 
                 // 回复数量
-                int replyCount = commentService.findCommentCount(CommunityConstant.ENTITY_TYPE_COMMENT, comment.getId());
+                int replyCount = commentService.findCommentCount(ENTITY_TYPE_COMMENT, comment.getId());
                 commentVo.put("replyCount", replyCount);
 
 

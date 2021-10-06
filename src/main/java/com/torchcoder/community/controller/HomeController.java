@@ -4,7 +4,10 @@ import com.torchcoder.community.entity.DiscussPost;
 import com.torchcoder.community.entity.Page;
 import com.torchcoder.community.entity.User;
 import com.torchcoder.community.service.DiscussPostService;
+import com.torchcoder.community.service.LikeService;
 import com.torchcoder.community.service.UserService;
+import com.torchcoder.community.util.CommunityConstant;
+import com.torchcoder.community.util.CommunityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,6 +31,9 @@ public class HomeController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private LikeService likeService;
+
     @RequestMapping(path = "/index", method = RequestMethod.GET)
     public String getIndexPage(Model model, Page page){
         // spring MVC 自动实例化 Model 和 Page, 并将Page注入 Model
@@ -43,6 +49,10 @@ public class HomeController {
                 map.put("post", post);
                 User user = userService.findUserById(post.getUserId());
                 map.put("user", user);
+
+                long likeCount = likeService.findEntityLikeCount(CommunityConstant.ENTITY_TYPE_POST, post.getId());
+                map.put("likeCount", likeCount);
+
                 discussPosts.add(map);
 
             }
