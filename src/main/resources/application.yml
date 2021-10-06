@@ -14,7 +14,7 @@
 #        - 120.79.161.30:6383
 #        - 120.79.161.30:6384
 #    # Redis服务器连接密码（默认为空）
-#    password: hEV8.b7i3MpiXR@
+#    password:
 #    #jedis连接池信息仅供参考
 #    lettuce:
 #      pool:
