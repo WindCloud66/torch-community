@@ -2,6 +2,8 @@ package com.torchcoder.community.controller;
 
 import com.torchcoder.community.annotation.LoginRequired;
 import com.torchcoder.community.entity.User;
+import com.torchcoder.community.service.FollowService;
+import com.torchcoder.community.service.LikeService;
 import com.torchcoder.community.service.UserService;
 import com.torchcoder.community.util.CommunityUtil;
 import com.torchcoder.community.util.HostHolder;
@@ -26,6 +28,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static com.torchcoder.community.util.CommunityConstant.ENTITY_TYPE_USER;
+
 /**
  * @author HouYongJu
  * @create 2021-10-03 16:31
@@ -48,11 +52,17 @@ public class UserController {
 
     @Autowired
     private HostHolder hostHolder;
+    @Autowired
+    private LikeService likeService;
+
+    @Autowired
+    private FollowService followService;
     @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET)
     public String getSettingPage(){
         return  "/site/setting";
     }
+
     @LoginRequired
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
     public String uploadHeader(MultipartFile headerImage, Model model){
@@ -92,6 +102,7 @@ public class UserController {
     }
 
     @RequestMapping(path = "/header/{fileName}", method = RequestMethod.GET)
+    @LoginRequired
     public void getHeader(@PathVariable("fileName") String fileName, HttpServletResponse response) {
         // 服务器存放路径
         fileName = uploadPath + "/" + fileName;
@@ -124,4 +135,33 @@ public class UserController {
 
     }
     // TODO 修改密码
+
+
+    // 个人主页
+    @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId") int userId, Model model) {
+        User user = userService.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("该用户不存在!");
+        }
+
+        // 用户
+        model.addAttribute("user", user);
+        // 点赞数量
+        int likeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount", likeCount);
+        // 关注数量
+        long followeeCount = followService.findFolloweeCount(userId, ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount", followeeCount);
+        // 粉丝数量
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER, userId);
+        model.addAttribute("followerCount", followerCount);
+        // 是否已关注
+        boolean hasFollowed = false;
+        if (hostHolder.getUser() != null) {
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(), ENTITY_TYPE_USER, userId);
+        }
+        model.addAttribute("hasFollowed", hasFollowed);
+        return "/site/profile";
+    }
 }
