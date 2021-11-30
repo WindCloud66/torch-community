@@ -8,7 +8,8 @@ import com.torchcoder.community.entity.DiscussPost;
 import com.torchcoder.community.entity.LoginTicket;
 import com.torchcoder.community.entity.Message;
 import com.torchcoder.community.entity.User;
-import org.junit.jupiter.api.Test;
+
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 

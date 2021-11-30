@@ -2,7 +2,8 @@ package com.torchcoder.community.EmailTest;
 
 
 import com.torchcoder.community.util.MailClient;
-import org.junit.jupiter.api.Test;
+
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.thymeleaf.TemplateEngine;

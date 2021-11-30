@@ -2,10 +2,8 @@ package com.torchcoder.community.controller;
 
 
 import com.torchcoder.community.annotation.LoginRequired;
-import com.torchcoder.community.entity.Comment;
-import com.torchcoder.community.entity.DiscussPost;
-import com.torchcoder.community.entity.Page;
-import com.torchcoder.community.entity.User;
+import com.torchcoder.community.entity.*;
+import com.torchcoder.community.event.EventProducer;
 import com.torchcoder.community.service.CommentService;
 import com.torchcoder.community.service.DiscussPostService;
 import com.torchcoder.community.service.LikeService;
@@ -23,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.*;
 
-import static com.torchcoder.community.util.CommunityConstant.ENTITY_TYPE_COMMENT;
+import static com.torchcoder.community.util.CommunityConstant.*;
 
 @Controller
 @RequestMapping("/discuss")
@@ -44,6 +42,9 @@ public class DiscussPostController {
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
     public String addDiscussPost(String title, String content){
@@ -58,6 +59,17 @@ public class DiscussPostController {
         post.setContent(content);
         post.setCreateTime(new Date());
         discussPostService.addDiscussPost(post);
+
+        // 触发发送事件
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(post.getId());
+
+        eventProducer.fireEvent(event);
+
+
 
         // 报错的情况,将来统一处理.
         return CommunityUtil.getJSONString(0, "发布成功!");

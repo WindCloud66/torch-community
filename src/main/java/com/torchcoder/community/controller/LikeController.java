@@ -2,7 +2,9 @@ package com.torchcoder.community.controller;
 
 
 import com.torchcoder.community.annotation.LoginRequired;
+import com.torchcoder.community.entity.Event;
 import com.torchcoder.community.entity.User;
+import com.torchcoder.community.event.EventProducer;
 import com.torchcoder.community.service.LikeService;
 import com.torchcoder.community.util.CommunityUtil;
 import com.torchcoder.community.util.HostHolder;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.torchcoder.community.util.CommunityConstant.TOPIC_LIKE;
+
 @Controller
 public class LikeController {
 
@@ -24,10 +28,13 @@ public class LikeController {
     @Autowired
     private HostHolder hostHolder;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @RequestMapping(path = "/like", method = RequestMethod.POST)
     @ResponseBody
     @LoginRequired
-    public String like(int entityType, int entityId, int entityUserId) {
+    public String like(int entityType, int entityId, int entityUserId, int postId) {
         User user = hostHolder.getUser();
 
         // 点赞
@@ -42,7 +49,21 @@ public class LikeController {
         map.put("likeCount", likeCount);
         map.put("likeStatus", likeStatus);
 
-        return CommunityUtil.getJSONString(0, "请先登录", map);
+        // 触发点赞事件
+        // 触发点赞事件
+        if (likeStatus == 1) {
+            Event event = new Event()
+                    .setTopic(TOPIC_LIKE)
+                    .setUserId(hostHolder.getUser().getId())
+                    .setEntityType(entityType)
+                    .setEntityId(entityId)
+                    .setEntityUserId(entityUserId)
+                    .setData("postId", postId);
+            eventProducer.fireEvent(event);
+        }
+
+
+        return CommunityUtil.getJSONString(0, null, map);
     }
 
 }

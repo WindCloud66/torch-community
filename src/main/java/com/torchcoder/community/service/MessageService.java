@@ -25,4 +25,12 @@ public interface MessageService {
     public int addMessage(Message message);
     // 读取私信
     public int readMessage(List<Integer> ids);
+    // 查询某个主题下最新的通知
+    public Message findLatestNotice(int userId, String topic);
+    // 查询某个主题所包含的通知数量
+    public int findNoticeCount(int userId, String topic);
+    // 查询未读的通知的数量
+    public int findNoticeUnreadCount(int userId, String topic);
+
+    List<Message> findNotices(int id, String topic, int offset, int limit);
 }

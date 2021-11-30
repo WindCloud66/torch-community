@@ -30,6 +30,9 @@ public class ServiceLogAspect {
         // 用户[1.2.3.4],在[xxx],访问了[com.nowcoder.community.service.xxx()].
         // 通过工具类获取request 对象
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if(attributes == null){
+            return;
+        }
         HttpServletRequest request = attributes.getRequest();
         // 获取IP地址
         String ip = request.getRemoteHost();
